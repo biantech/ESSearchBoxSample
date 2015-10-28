@@ -23,23 +23,33 @@
         <th></th>
     </tr>
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.DocumentId)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Name)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Text)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
-            @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
-            @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
-        </td>
-    </tr>
-}
-
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.DocumentId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Text)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { id = item.DocumentId }) |
+                @Html.ActionLink("Details", "Details", new { id = item.DocumentId }) |
+                @Html.ActionLink("Delete", "Delete", new { id = item.DocumentId }, new { onclick = "return confirm('Are you sure ?');" })
+            </td>
+        </tr>
+    }
 </table>
+
+<div class="row">
+    <div class="span2">
+        <p>@Html.ActionLink("New Document", "Create", null, new {@class = "btn btn-small btn-primary"})</p>
+    </div>
+    <div class="span2">
+        <p>@Html.ActionLink("Reindex All", "ReIndexAll", null, new {@class = "btn btn-small btn-primary", onclick = "return confirm('Are you sure want to reindex your documents ?');"})</p>
+    </div>
+</div>
+

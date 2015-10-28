@@ -14,16 +14,19 @@ namespace ESSearchBoxSample.Models
     public class DocumentModel
     {
         //DocumentId will be used as id, no need to index it as a property
-        [JsonIgnore]
+        //[JsonIgnore]
         [Key]
+        [ElasticProperty(Type = FieldType.Integer)]
         public int DocumentId { get; set; }
 
         [Required(ErrorMessage = "A Document Name is required")]
         [StringLength(maximumLength:255,MinimumLength = 1)]
+        [ElasticProperty(Type = FieldType.String, AddSortField = true, Store = true)]
         public string Name { get; set; }
 
         [Required(ErrorMessage = "An Document Text is required")]
         [StringLength(maximumLength: 255, MinimumLength = 1)]
+        [ElasticProperty(Type = FieldType.String,AddSortField = true,Store = true)]
         public string Text { get; set; }
     }
 }

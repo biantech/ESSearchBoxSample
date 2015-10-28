@@ -21,7 +21,6 @@ namespace ESSearchBoxSample.Controllers
         public ActionResult Index()
         {
             var documents = db.DocumentModels.ToList();
-
             return View(documents);
         }
 
@@ -31,7 +30,7 @@ namespace ESSearchBoxSample.Controllers
         }
 
         [HttpPost]
-        public ActionResult Create(ESSearchBoxSample.Models.DocumentModel document)
+        public ActionResult Create(DocumentModel document)
         {
             if (ModelState.IsValid)
             {
@@ -46,12 +45,12 @@ namespace ESSearchBoxSample.Controllers
         // GET: /DocumentManager/Edit/5
         public ActionResult Edit(int id)
         {
-            ESSearchBoxSample.Models.DocumentModel documentModel = db.DocumentModels.Find(id);
+            DocumentModel documentModel = db.DocumentModels.Find(id);
             return View(documentModel);
         }
 
         [HttpPost]
-        public ActionResult Edit(ESSearchBoxSample.Models.DocumentModel document)
+        public ActionResult Edit(DocumentModel document)
         {
             if (ModelState.IsValid)
             {
@@ -65,7 +64,7 @@ namespace ESSearchBoxSample.Controllers
 
         public ActionResult Delete(int id)
         {
-            ESSearchBoxSample.Models.DocumentModel document = db.DocumentModels.Find(id);
+            DocumentModel document = db.DocumentModels.Find(id);
             db.DocumentModels.Remove(document);
             db.SaveChanges();
             Index(document, "delete");
@@ -96,24 +95,29 @@ namespace ESSearchBoxSample.Controllers
             iCreateIndexReq.IndexSettings = new IndexSettings();
             iCreateIndexReq.IndexSettings.NumberOfReplicas = 10;
 
-            client.CreateIndex(iCreateIndexReq);
+            //client.CreateIndex(iCreateIndexReq);
+
+            var resCreate = client.CreateIndex(indexName, s => s.AddMapping<DocumentModel>(f => f.MapFromAttributes()).NumberOfReplicas(1).NumberOfShards(10));
 
             //client.CreateIndex()
             // Index all documents
-            client.IndexMany<ESSearchBoxSample.Models.DocumentModel>(documents);
+            client.IndexMany<DocumentModel>(documents);
+            //client.Index()
 
             ViewBag.Message = "Reindexing all database is complete!";
 
             return RedirectToAction("Index");
         }
 
-        private static void Index(ESSearchBoxSample.Models.DocumentModel document, String operation)
+
+
+        private static void Index(DocumentModel document, String operation)
         {
             var uriString = ConfigurationManager.AppSettings["SEARCHBOX_URL"];
             var searchBoxUri = new Uri(uriString);
 
             var settings = new ConnectionSettings(searchBoxUri);
-            settings.SetDefaultIndex("sample");
+            settings.SetDefaultIndex(indexName);
 
             var client = new ElasticClient(settings);
 
@@ -123,18 +127,28 @@ namespace ESSearchBoxSample.Controllers
                 ICreateIndexRequest iCreateIndexReq = new CreateIndexRequest(indexName);
                 iCreateIndexReq.IndexSettings = new IndexSettings();
                 iCreateIndexReq.IndexSettings.NumberOfReplicas = 10;
-                //client.CreateIndex("sample", new IndexSettings());
+
+                //iCreateIndexReq.IndexSettings.Mappings = new List<RootObjectMapping>();
+                //RootObjectMapping rootObjectMapping = new RootObjectMapping();
+                //rootObjectMapping.AllFieldMapping()
+                //iCreateIndexReq.IndexSettings.Mappings.
+                //client.CreateIndex(iCreateIndexReq);
+                //client.CreateIndex(indexName,s=>s.)
+                var resCreate = client.CreateIndex(indexName, s => s.AddMapping<DocumentModel>(f => f.MapFromAttributes()).NumberOfReplicas(1).NumberOfShards(10));
+
+                //client.CreateIndex(indexName, new IndexSettings());
+                //client.create
             }
 
             if (operation.Equals("delete"))
             {
                 //client.DeleteById(indexName, "documents", document.DocumentId);
                 IDeleteByQueryRequest iDeleteByQueryRequest = new DeleteByQueryRequest();
-                //iDeleteByQueryRequest.
                 //IDeleteIndexRequest delReq = new DeleteIndexRequest(indexName);
-                //delReq.
                 //client.DeleteIndex()
                 //client.DeleteByQuery(new DeleteByQueryRequest())
+                client.Delete<DocumentModel>(f => f.Id(document.DocumentId).Index(indexName).Refresh());
+                //var response = this.Client.Delete<ElasticsearchProject>(f=>f.Id(newDocument.Id).Index(newIndex).Refresh());
             }
             else
             {
